@@ -1,9 +1,7 @@
 var ws = require('./lib/servers/webServer'),
     gs = require('./lib/servers/gameServer'),
-    ml = require('./lib/maps/mapLoader'),
     gameServer,
-    webServer,
-    mapLoader = ml.createMapLoader();
+    webServer;
 
 
 webServer = ws.start(8080);

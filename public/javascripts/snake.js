@@ -1,25 +1,28 @@
-var turn  = [];
-
+var turn  = [],
+    io = io,
+    $ = $,
+    document = document;
 /*
     The board
  */
-var Board = function(width, height, spacing) {
+var Board = function (width, height, spacing) {
     "use strict";
     this.maxX = width / spacing;
     this.maxY = height / spacing;
     this.z = spacing;
 };
 var b = Board.prototype;
-b.draw = function(ctx, map) {
+b.draw = function (ctx, map) {
     "use strict";
-    for(i = 0; i < this.maxX; i += 1) {
+    var i;
+    for (i = 0; i < this.maxX; i += 1) {
         ctx.strokeRect(i * this.z + 1, 0 * this.z + 1, this.z - 2, this.z - 2);
         ctx.strokeRect(i * this.z + 1, (this.maxY - 1) * this.z + 1, this.z - 2, this.z - 2);
 
         map[i][0] = 3;
         map[i][(this.maxY - 1)] = 3;
     }
-    for(i = 0; i < this.maxY; i += 1) {
+    for (i = 0; i < this.maxY; i += 1) {
         ctx.strokeRect(0 * this.z + 1, i * this.z + 1, this.z - 2, this.z - 2);
         ctx.strokeRect((this.maxX - 1) * this.z + 1, i * this.z + 1, this.z - 2, this.z - 2);
 
@@ -39,8 +42,8 @@ var f = Food.prototype;
 f.place = function (map) {
     "use strict";
     do {
-        this.x = Math.random() * 45|0;
-        this.y = Math.random() * 30|0;
+        this.x = Math.random() * 45 | 0;
+        this.y = Math.random() * 30 | 0;
     } while (map[this.x][this.y] && map[this.x][this.y] !== 3);
 
     map[this.x][this.y] = 1;
@@ -65,36 +68,87 @@ var p = Player.prototype;
 var Snake = function () {
     "use strict";
     this._io = null;
+    this._intervalId = null;
+    this._ctx = null;
+    this._board = null;
 };
 var s = Snake.prototype;
 s.start = function (webSocketUrl) {
     "use strict";
     this._io = io.connect(webSocketUrl);
-    this._io.on('connect', $.proxy(this.connect, this));
-    this._io.on('updateDirection', $.proxy(this.receiveMap, this));
-    this._io.on('map', $.proxy(this.updateDirection, this));
+    this._io.on('connect', $.proxy(this.connected, this));
+    this._io.on('updateDirection', $.proxy(this.updateDirection, this));
+    this._io.on('map', $.proxy(this.receiveMap, this));
+
+    document.onkeydown = $.proxy(this.keyListener, this);
+
+    var canvas = document.getElementById('stage');
+    canvas.setAttribute('width', 45 * 10);
+    canvas.setAttribute('height', 30 * 10);
+    this._ctx = canvas.getContext('2d');
 };
-s.connect = function () {
+s.connected = function () {
     "use strict";
     this._io.emit('addPlayer', { name: 'Guest-' + Math.floor((Math.random() * 999) + 1) });
 };
 s.receiveMap = function (mapData) {
     "use strict";
     console.log('receiving map data');
-    console.dir(mapData);
+    this._board = new Board(45 * 10, 30 * 10, 10);
+    var map = [],
+        i;
+    for (i = 0; i < 45; i += 1) {
+        map[i] = [];
+    }
+    this._board.draw(this._ctx, map);
+
 };
 s.updateDirection = function (dir) {
     "use strict";
+    console.log('Turning: ' + dir);
     turn.unshift(dir);
+};
+s.tick = function () {
+    "use strict";
 };
 s.keyListener = function (event) {
     "use strict";
+    var code = event.keyCode - 37,
+        dir,
+        sum;
+
+    console.log('Keydown: ' + code);
+    /***
+     * 0: left
+     * 1: up
+     * 2: right
+     * 3: down
+     **/
+    if (0 <= code && code < 4 && code !== turn[0]) {
+        this._io.emit('updateDirection', code);
+    } else if (-5 === code) {
+
+        if (this._intervalId) {
+            clearInterval(this._intervalId);
+            this._intervalId = 0;
+        } else {
+            this._intervalId = setInterval($.proxy(this.tick, this), 120);
+        }
+
+    } else { // O.o
+        dir = sum + code;
+        if (dir === 44 || dir === 94 || dir === 126 || dir === 171) {
+            sum+= code;
+        } else if (dir === 218) {
+            easy = 1;
+        }
+    }
 };
 
 function init() {
 
     var ctx;
-
+    var doc = document;
     var xV = [-1, 0, 1, 0];
     var yV = [0, -1, 0, 1];
     var queue = [];
@@ -117,8 +171,6 @@ function init() {
     var sum = 0, easy = 0;
 
     var i, dir, board, food;
-
-    var doc = document;
 
     var canvas = doc.getElementById('stage');
 
@@ -238,30 +290,5 @@ function init() {
 
     doc.onkeydown = function(e) {
 
-        var code = e.keyCode - 37;
-
-        /*
-         * 0: left
-         * 1: up
-         * 2: right
-         * 3: down
-         **/
-        if (0 <= code && code < 4 && code !== turn[0]) {
-            socket.emit('updateDirection', code);
-        } else if (-5 == code) {
-
-            if (interval) {
-                clearInterval(interval);
-                interval = 0;
-            } else {
-                interval = setInterval(clock, 120);
-            }
-
-        } else { // O.o
-            dir = sum + code;
-            if (dir == 44||dir==94||dir==126||dir==171) {
-                sum+= code
-            } else if (dir === 218) easy = 1;
-        }
     }
 }
