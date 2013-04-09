@@ -1,0 +1,19 @@
+{
+    "name": "Snakemine",
+    "description": "A simple snake multiplayer game",
+    "author": "Ale Bles <alehbles@hotmail.com>",
+    "version": "0.0.1",
+    "private": true,
+    "scripts": {
+        "start": "node snakemine.js"
+    },
+    "dependencies": {
+        "express": "3.x.x",
+        "ejs": "0.8.x",
+        "socket.io": "0.9.x",
+        "log4js": "0.6.x"
+    },
+    "engines": {
+        "node": "0.10.2"
+    }
+}
