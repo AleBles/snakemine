@@ -6,3 +6,16 @@ body {
 a {
   color: #00B7FF;
 }
+
+.players {
+    position:relative;
+    height:100%;
+}
+
+#stage {
+    width:100%;
+    position:relative;
+}
+.stage-span {
+    position:relative;
+}

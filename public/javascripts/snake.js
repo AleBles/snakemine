@@ -65,17 +65,18 @@ var p = Player.prototype;
 /*
     Main game logic
  */
-var Snake = function () {
+var Snake = function (webSocketUrl) {
     "use strict";
     this._io = null;
     this._intervalId = null;
     this._ctx = null;
     this._board = null;
+    this._serverUrl = webSocketUrl;
 };
 var s = Snake.prototype;
-s.start = function (webSocketUrl) {
+s.start = function () {
     "use strict";
-    this._io = io.connect(webSocketUrl);
+    this._io = io.connect(this._serverUrl);
     this._io.on('connect', $.proxy(this.connected, this));
     this._io.on('updateDirection', $.proxy(this.updateDirection, this));
     this._io.on('map', $.proxy(this.receiveMap, this));
@@ -83,8 +84,8 @@ s.start = function (webSocketUrl) {
     document.onkeydown = $.proxy(this.keyListener, this);
 
     var canvas = document.getElementById('stage');
-    canvas.setAttribute('width', 45 * 10);
-    canvas.setAttribute('height', 30 * 10);
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetWidth / 2;
     this._ctx = canvas.getContext('2d');
 };
 s.connected = function () {
