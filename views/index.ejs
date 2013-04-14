@@ -8,38 +8,28 @@
         <link rel='stylesheet' href='/stylesheets/colorpicker.css' />
     </head>
     <body>
-        <div class="navbar">
-            <div class="navbar-inner">
-                <a class="brand" href="#">Guest</a>
-                <ul class="nav">
-                    <li class="active"><a href=/">Play</a></li>
-                    <li><a href="/about">About</a></li>
-                    <li><a href="https://github.com/AleBles/snakemine">Github</a></li>
-                    <li><a href="/contact">Contact</a></li>
-                </ul>
-            </div>
-        </div>
+        <% include navbar.ejs %>
         <div class="container">
             <div class="row-fluid">
                 <div class="span8 stage-span"><canvas id="stage"></canvas></div>
                 <div class="span4 well well-small players">Players</div>
             </div>
             <div class="row-fluid">
-                <div class="span12 well well-small">Chat</div>
-            </div>
-        </div>
+    <div class="span12 well well-small">Chat</div>
+</div>
+</div>
 
-        <% include modals/connect.ejs %>
+<% include modals/connect.ejs %>
 
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-        <script src="javascripts/bootstrap.min.js"></script>
-        <script src="javascripts/bootstrap-colorpicker.js"></script>
-        <script src="javascripts/snake.js"></script>
-        <script src="http://localhost:8081/socket.io/socket.io.js"></script>
-        <script type="text/javascript">
-            $('#color').colorpicker();
-            $('#connect-modal').modal('show');
-            var snakeGame = new Snake('ws://localhost:8081');
-        </script>
-    </body>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="javascripts/bootstrap.min.js"></script>
+<script src="javascripts/bootstrap-colorpicker.js"></script>
+<script src="javascripts/snake.js"></script>
+<script src="http://localhost:8081/socket.io/socket.io.js"></script>
+<script type="text/javascript">
+    $('#color').colorpicker();
+    $('#connect-modal').modal('show');
+    var snakeGame = new Snake('ws://localhost:8081');
+</script>
+</body>
 </html>
