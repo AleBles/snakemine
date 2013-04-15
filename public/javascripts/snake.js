@@ -5,26 +5,27 @@ var turn  = [],
 /*
     The board
  */
-var Board = function (x, y, xOffset, yOffset) {
+var Board = function (map, xOffset, yOffset) {
     "use strict";
-    this.maxX = x;
-    this.maxY = y;
+    this._map = map;
+    this.maxX = map[0].length;
+    this.maxY = map.length;
     this.xOffset = xOffset;
     this.yOffset = yOffset;
-    this.z = 10;
+    this.BORDER = 3;
 };
 var b = Board.prototype;
-b.draw = function (ctx, map) {
+b.draw = function (ctx) {
     "use strict";
-    var i;
-    for (i = 0; i < this.maxX; i += 1) {
-        console.log(i);
-        ctx.strokeRect(i * this.xOffset + 1, 0 * this.yOffset + 1, this.xOffset - 2, this.yOffset - 2);
-        ctx.strokeRect(i * this.xOffset + 1, (this.maxY - 1) * this.yOffset + 1, this.xOffset - 2, this.yOffset - 2);
-    }
-    for (i = 0; i < this.maxY; i += 1) {
-        ctx.strokeRect(0 * this.yOffset + 1, i * this.yOffset + 1, this.xOffset - 2, this.yOffset - 2);
-        ctx.strokeRect((this.maxX - 1) * this.xOffset + 1, i * this.yOffset + 1, this.xOffset - 2, this.yOffset - 2);
+    var x,
+        y;
+
+    for (y = 0; y < this.maxY; y += 1) {
+        for (x = 0; x < this.maxX; x += 1) {
+            if (this._map.hasOwnProperty(y) && this._map[y].hasOwnProperty(x) && this.BORDER === this._map[y][x]) {
+                ctx.strokeRect(x * this.xOffset + 1, y * this.yOffset + 1, this.xOffset - 2, this.yOffset - 2);
+            }
+        }
     }
 };
 /*
@@ -102,19 +103,10 @@ s.connected = function () {
 s.receiveMap = function (mapData) {
     "use strict";
     console.log('receiving map data');
-    var xSize = mapData[0].length,
-        ySize = mapData.length,
-        xOffset = this._width / xSize,
-        yOffset = this._height / ySize,
-        map = [],
-        i;
-
-    this._board = new Board(xSize, ySize, xOffset, yOffset);
-    for (i = 0; i < 45; i += 1) {
-        map[i] = [];
-    }
-    this._board.draw(this._ctx, map);
-
+    var xOffset = this._width / mapData[0].length,
+        yOffset = this._height / mapData.length;
+    this._board = new Board(mapData, xOffset, yOffset);
+    this._board.draw(this._ctx);
 };
 s.updateDirection = function (dir) {
     "use strict";
