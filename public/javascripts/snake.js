@@ -5,29 +5,26 @@ var turn  = [],
 /*
     The board
  */
-var Board = function (width, height, spacing) {
+var Board = function (x, y, xOffset, yOffset) {
     "use strict";
-    this.maxX = width / spacing;
-    this.maxY = height / spacing;
-    this.z = spacing;
+    this.maxX = x;
+    this.maxY = y;
+    this.xOffset = xOffset;
+    this.yOffset = yOffset;
+    this.z = 10;
 };
 var b = Board.prototype;
 b.draw = function (ctx, map) {
     "use strict";
     var i;
     for (i = 0; i < this.maxX; i += 1) {
-        ctx.strokeRect(i * this.z + 1, 0 * this.z + 1, this.z - 2, this.z - 2);
-        ctx.strokeRect(i * this.z + 1, (this.maxY - 1) * this.z + 1, this.z - 2, this.z - 2);
-
-        map[i][0] = 3;
-        map[i][(this.maxY - 1)] = 3;
+        console.log(i);
+        ctx.strokeRect(i * this.xOffset + 1, 0 * this.yOffset + 1, this.xOffset - 2, this.yOffset - 2);
+        ctx.strokeRect(i * this.xOffset + 1, (this.maxY - 1) * this.yOffset + 1, this.xOffset - 2, this.yOffset - 2);
     }
     for (i = 0; i < this.maxY; i += 1) {
-        ctx.strokeRect(0 * this.z + 1, i * this.z + 1, this.z - 2, this.z - 2);
-        ctx.strokeRect((this.maxX - 1) * this.z + 1, i * this.z + 1, this.z - 2, this.z - 2);
-
-        map[0][i] = 3;
-        map[(this.maxX - 1)][i] = 3;
+        ctx.strokeRect(0 * this.yOffset + 1, i * this.yOffset + 1, this.xOffset - 2, this.yOffset - 2);
+        ctx.strokeRect((this.maxX - 1) * this.xOffset + 1, i * this.yOffset + 1, this.xOffset - 2, this.yOffset - 2);
     }
 };
 /*
@@ -73,6 +70,8 @@ var Snake = function (webSocketUrl) {
     this._board = null;
     this._serverUrl = webSocketUrl;
     this._players = [];
+    this._width = 0;
+    this._height = 0;
 };
 var s = Snake.prototype;
 s.start = function (playerName, playerColor) {
@@ -92,8 +91,8 @@ s.start = function (playerName, playerColor) {
     document.onkeydown = $.proxy(this.keyListener, this);
 
     var canvas = document.getElementById('stage');
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetWidth / 2;
+    this._width = canvas.width = canvas.offsetWidth;
+    this._height = canvas.height = canvas.offsetWidth / 2;
     this._ctx = canvas.getContext('2d');
 };
 s.connected = function () {
@@ -103,9 +102,14 @@ s.connected = function () {
 s.receiveMap = function (mapData) {
     "use strict";
     console.log('receiving map data');
-    this._board = new Board(45 * 10, 30 * 10, 10);
-    var map = [],
+    var xSize = mapData[0].length,
+        ySize = mapData.length,
+        xOffset = this._width / xSize,
+        yOffset = this._height / ySize,
+        map = [],
         i;
+
+    this._board = new Board(xSize, ySize, xOffset, yOffset);
     for (i = 0; i < 45; i += 1) {
         map[i] = [];
     }
