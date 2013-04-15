@@ -58,8 +58,42 @@ var Player = function (name, color) {
     "use strict";
     this.name = name;
     this.color = color;
+    this.x = 0;
+    this.y = 0;
+    this.xOffset = 0;
+    this.yOffset = 0;
+    this.oldCoords = {x: null, y: null};
+    this.xVelocity = [-1, 0, 1, 0];
+    this.yVelocity = [0, -1, 0, 1];
+    this.direction = Math.random() * 3 | 0;
 };
 var p = Player.prototype;
+p.init = function (xOffset, yOffset) {
+    "use strict";
+    this.xOffset = xOffset;
+    this.yOffset = yOffset;
+};
+p.updateDirection = function (dir) {
+    "use strict";
+    this.direction = dir;
+};
+p.tick = function () {
+    "use strict";
+    this.oldCoords.x = this.x;
+    this.oldCoords.y = this.y;
+    this.x += this.xVelocity[this.direction];
+    this.y += this.yVelocity[this.direction];
+};
+p.place = function (x, y) {
+    "use strict";
+    this.x = x;
+    this.y = y;
+};
+p.draw = function (ctx) {
+    "use strict";
+    ctx.clearRect(this.oldCoords.x * this.xOffset, this.oldCoords.y * this.yOffset, this.xOffset, this.yOffset);
+    ctx.strokeRect(this.x * this.xOffset + 1, this.y * this.yOffset + 1, this.xOffset - 2, this.yOffset - 2);
+};
 /*
     Main game logic
  */
@@ -78,11 +112,7 @@ var s = Snake.prototype;
 s.start = function (playerName, playerColor) {
     "use strict";
 
-    this._players.push({
-        name: playerName,
-        color: playerColor,
-        local: true
-    });
+    this._player = new Player(playerName, playerColor);
 
     this._io = io.connect(this._serverUrl);
     this._io.on('connect', $.proxy(this.connected, this));
@@ -98,15 +128,21 @@ s.start = function (playerName, playerColor) {
 };
 s.connected = function () {
     "use strict";
-    this._io.emit('addPlayer', this._players[0]);
+    this._io.emit('addPlayer', this._player);
 };
 s.receiveMap = function (mapData) {
     "use strict";
     console.log('receiving map data');
     var xOffset = this._width / mapData[0].length,
         yOffset = this._height / mapData.length;
+
     this._board = new Board(mapData, xOffset, yOffset);
     this._board.draw(this._ctx);
+
+    this._player.init(xOffset, yOffset);
+    this._player.place(20, 20);
+
+    this._intervalId = setInterval($.proxy(this.tick, this), 30);
 };
 s.updateDirection = function (dir) {
     "use strict";
@@ -115,6 +151,13 @@ s.updateDirection = function (dir) {
 };
 s.tick = function () {
     "use strict";
+//    var dir;
+//    if (!turn.length) {
+//        dir = turn.pop();
+//    }
+//    this._player.updateDirection(dir);
+    this._player.tick();
+    this._player.draw(this._ctx);
 };
 s.keyListener = function (event) {
     "use strict";
