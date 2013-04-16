@@ -142,28 +142,21 @@ s.receiveMap = function (mapData) {
     this._player.init(xOffset, yOffset);
     this._player.place(20, 20);
 
-    this._intervalId = setInterval($.proxy(this.tick, this), 30);
+    this._intervalId = setInterval($.proxy(this.tick, this), 120);
 };
 s.updateDirection = function (dir) {
     "use strict";
     console.log('Turning: ' + dir);
-    turn.unshift(dir);
+    this._player.updateDirection(dir);
 };
 s.tick = function () {
     "use strict";
-//    var dir;
-//    if (!turn.length) {
-//        dir = turn.pop();
-//    }
-//    this._player.updateDirection(dir);
     this._player.tick();
     this._player.draw(this._ctx);
 };
 s.keyListener = function (event) {
     "use strict";
-    var code = event.keyCode - 37,
-        dir,
-        sum;
+    var code = event.keyCode - 37;
 
     console.log('Keydown: ' + code);
     /***
@@ -174,22 +167,6 @@ s.keyListener = function (event) {
      **/
     if (0 <= code && code < 4 && code !== turn[0]) {
         this._io.emit('updateDirection', code);
-    } else if (-5 === code) {
-
-        if (this._intervalId) {
-            clearInterval(this._intervalId);
-            this._intervalId = 0;
-        } else {
-            this._intervalId = setInterval($.proxy(this.tick, this), 120);
-        }
-
-    } else { // O.o
-        dir = sum + code;
-        if (dir === 44 || dir === 94 || dir === 126 || dir === 171) {
-            sum += code;
-        } else if (dir === 218) {
-            easy = 1;
-        }
     }
 };
 
