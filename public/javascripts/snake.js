@@ -31,25 +31,24 @@ b.draw = function (ctx) {
 /*
     The Food
  */
-var Food = function (spacing) {
+var Food = function (xOffset, yOffset) {
     "use strict";
     this.x = this.y = 0;
-    this.z = spacing;
+    this.xOffset = xOffset;
+    this.yOffset = yOffset;
+    this.color = 'rgb(200,0,0)';
 };
 var f = Food.prototype;
-f.place = function (map) {
+f.place = function (x, y) {
     "use strict";
-    do {
-        this.x = Math.random() * 45 | 0;
-        this.y = Math.random() * 30 | 0;
-    } while (map[this.x][this.y] && map[this.x][this.y] !== 3);
-
-    map[this.x][this.y] = 1;
+    this.x = x;
+    this.y = y;
     return this;
 };
 f.draw = function (ctx) {
     "use strict";
-    ctx.strokeRect(this.x * this.z + 1, this.y * this.z + 1, this.z - 2, this.z - 2);
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x * this.xOffset + 1, this.y * this.yOffset + 1, this.xOffset - 2, this.yOffset - 2);
 };
 /*
     The player
@@ -92,7 +91,8 @@ p.place = function (x, y) {
 p.draw = function (ctx) {
     "use strict";
     ctx.clearRect(this.oldCoords.x * this.xOffset, this.oldCoords.y * this.yOffset, this.xOffset, this.yOffset);
-    ctx.strokeRect(this.x * this.xOffset + 1, this.y * this.yOffset + 1, this.xOffset - 2, this.yOffset - 2);
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x * this.xOffset + 1, this.y * this.yOffset + 1, this.xOffset - 2, this.yOffset - 2);
 };
 /*
     Main game logic
@@ -133,16 +133,24 @@ s.connected = function () {
 s.receiveMap = function (mapData) {
     "use strict";
     console.log('receiving map data');
-    var xOffset = this._width / mapData[0].length,
-        yOffset = this._height / mapData.length;
+    console.dir(mapData);
+    this.xOffset = this._width / mapData[0].length;
+    this.yOffset = this._height / mapData.length;
 
-    this._board = new Board(mapData, xOffset, yOffset);
+    this._board = new Board(mapData, this.xOffset, this.yOffset);
     this._board.draw(this._ctx);
 
-    this._player.init(xOffset, yOffset);
+    this._player.init(this.xOffset, this.yOffset);
     this._player.place(20, 20);
 
     this._intervalId = setInterval($.proxy(this.tick, this), 120);
+    this._food = new Food(this.xOffset, this.yOffset);
+    this._food.place(
+        Math.random() * mapData[0].length,
+        Math.random() * mapData.length
+    );
+    this._food.draw(this._ctx);
+
 };
 s.updateDirection = function (dir) {
     "use strict";
@@ -153,6 +161,7 @@ s.tick = function () {
     "use strict";
     this._player.tick();
     this._player.draw(this._ctx);
+
 };
 s.keyListener = function (event) {
     "use strict";
