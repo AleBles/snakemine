@@ -62,8 +62,6 @@ var Player = function (name, color) {
     this.xOffset = 0;
     this.yOffset = 0;
     this.oldCoords = {x: null, y: null};
-    this.xVelocity = [-1, 0, 1, 0];
-    this.yVelocity = [0, -1, 0, 1];
     this.direction = Math.random() * 3 | 0;
 };
 var p = Player.prototype;
@@ -72,16 +70,14 @@ p.init = function (xOffset, yOffset) {
     this.xOffset = xOffset;
     this.yOffset = yOffset;
 };
-p.updateDirection = function (dir) {
+p.setNextCoords = function (coords) {
     "use strict";
-    this.direction = dir;
-};
-p.tick = function () {
-    "use strict";
+
+    console.log('Getting coord update');
     this.oldCoords.x = this.x;
     this.oldCoords.y = this.y;
-    this.x += this.xVelocity[this.direction];
-    this.y += this.yVelocity[this.direction];
+    this.x = coords.x;
+    this.y = coords.y;
 };
 p.place = function (x, y) {
     "use strict";
@@ -90,6 +86,8 @@ p.place = function (x, y) {
 };
 p.draw = function (ctx) {
     "use strict";
+//    console.log('drawing');
+//    console.log(this.x, this.y);
     ctx.clearRect(this.oldCoords.x * this.xOffset, this.oldCoords.y * this.yOffset, this.xOffset, this.yOffset);
     ctx.fillStyle = this.color;
     ctx.fillRect(this.x * this.xOffset + 1, this.y * this.yOffset + 1, this.xOffset - 2, this.yOffset - 2);
@@ -100,7 +98,6 @@ p.draw = function (ctx) {
 var Snake = function (webSocketUrl) {
     "use strict";
     this._io = null;
-    this._intervalId = null;
     this._ctx = null;
     this._board = null;
     this._serverUrl = webSocketUrl;
@@ -116,7 +113,7 @@ s.start = function (playerName, playerColor) {
 
     this._io = io.connect(this._serverUrl);
     this._io.on('connect', $.proxy(this.connected, this));
-    this._io.on('updateDirection', $.proxy(this.updateDirection, this));
+    this._io.on('updateCoords', $.proxy(this.updateCoords, this));
     this._io.on('map', $.proxy(this.receiveMap, this));
 
     document.onkeydown = $.proxy(this.keyListener, this);
@@ -142,26 +139,11 @@ s.receiveMap = function (mapData) {
 
     this._player.init(this.xOffset, this.yOffset);
     this._player.place(20, 20);
-
-    this._intervalId = setInterval($.proxy(this.tick, this), 120);
-    this._food = new Food(this.xOffset, this.yOffset);
-    this._food.place(
-        Math.random() * mapData[0].length,
-        Math.random() * mapData.length
-    );
-    this._food.draw(this._ctx);
-
 };
-s.updateDirection = function (dir) {
+s.updateCoords = function (coords) {
     "use strict";
-    console.log('Turning: ' + dir);
-    this._player.updateDirection(dir);
-};
-s.tick = function () {
-    "use strict";
-    this._player.tick();
+    this._player.setNextCoords(coords);
     this._player.draw(this._ctx);
-
 };
 s.keyListener = function (event) {
     "use strict";
