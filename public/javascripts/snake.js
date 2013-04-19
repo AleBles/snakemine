@@ -34,21 +34,28 @@ b.draw = function (ctx) {
 var Food = function (xOffset, yOffset) {
     "use strict";
     this.x = this.y = 0;
+    this.oldCoords = { x: 0, y: 0 };
     this.xOffset = xOffset;
     this.yOffset = yOffset;
     this.color = 'rgb(200,0,0)';
+    this.cnt = 0;
 };
 var f = Food.prototype;
 f.place = function (x, y) {
     "use strict";
+    this.oldCoords.x = this.x;
+    this.oldCoords.y = this.y;
     this.x = x;
     this.y = y;
     return this;
 };
 f.draw = function (ctx) {
     "use strict";
-    ctx.fillStyle = this.color;
-    ctx.fillRect(this.x * this.xOffset + 1, this.y * this.yOffset + 1, this.xOffset - 2, this.yOffset - 2);
+    if (this.oldCoords.x !== this.x && this.oldCoords.y !== this.y && this.cnt < 1) {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x * this.xOffset + 1, this.y * this.yOffset + 1, this.xOffset - 2, this.yOffset - 2);
+        this.cnt += 1;
+    }
 };
 /*
     The player
