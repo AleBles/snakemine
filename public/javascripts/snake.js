@@ -62,6 +62,7 @@ var Player = function (name, color) {
     this.xOffset = 0;
     this.yOffset = 0;
     this.oldCoords = {x: null, y: null};
+    this.velocity = {x: [-1, 0, 1, 0], y: [0, -1, 0, 1] };
     this.direction = Math.random() * 3 | 0;
 };
 var p = Player.prototype;
@@ -70,24 +71,26 @@ p.init = function (xOffset, yOffset) {
     this.xOffset = xOffset;
     this.yOffset = yOffset;
 };
-p.setNextCoords = function (coords) {
-    "use strict";
-
-    console.log('Getting coord update');
-    this.oldCoords.x = this.x;
-    this.oldCoords.y = this.y;
-    this.x = coords.x;
-    this.y = coords.y;
-};
 p.place = function (x, y) {
     "use strict";
     this.x = x;
     this.y = y;
 };
+p.update = function (socket) {
+    "use strict";
+    this.oldCoords.x = this.x;
+    this.oldCoords.y = this.y;
+    this.x += this.velocity.x[this.direction];
+    this.y += this.velocity.y[this.direction];
+
+    socket.emit('updateCoords', {x: this.x, y: this.y});
+};
+p.setDirection = function (dir) {
+    "use strict";
+    this.direction = dir;
+};
 p.draw = function (ctx) {
     "use strict";
-//    console.log('drawing');
-//    console.log(this.x, this.y);
     ctx.clearRect(this.oldCoords.x * this.xOffset, this.oldCoords.y * this.yOffset, this.xOffset, this.yOffset);
     ctx.fillStyle = this.color;
     ctx.fillRect(this.x * this.xOffset + 1, this.y * this.yOffset + 1, this.xOffset - 2, this.yOffset - 2);
@@ -104,6 +107,7 @@ var Snake = function (webSocketUrl) {
     this._players = [];
     this._width = 0;
     this._height = 0;
+    this._intervalId = null;
 };
 var s = Snake.prototype;
 s.start = function (playerName, playerColor) {
@@ -115,6 +119,7 @@ s.start = function (playerName, playerColor) {
     this._io.on('connect', $.proxy(this.connected, this));
     this._io.on('updateCoords', $.proxy(this.updateCoords, this));
     this._io.on('map', $.proxy(this.receiveMap, this));
+    this._io.on('gameOver', $.proxy(this.playerGameOver, this));
 
     document.onkeydown = $.proxy(this.keyListener, this);
 
@@ -122,6 +127,9 @@ s.start = function (playerName, playerColor) {
     this._width = canvas.width = canvas.offsetWidth;
     this._height = canvas.height = canvas.offsetWidth / 2;
     this._ctx = canvas.getContext('2d');
+
+    this._intervalId = setInterval($.proxy(this.tick, this), 33);
+
 };
 s.connected = function () {
     "use strict";
@@ -140,10 +148,13 @@ s.receiveMap = function (mapData) {
     this._player.init(this.xOffset, this.yOffset);
     this._player.place(20, 20);
 };
-s.updateCoords = function (coords) {
+s.tick = function () {
     "use strict";
-    this._player.setNextCoords(coords);
+    this._player.update(this._io);
     this._player.draw(this._ctx);
+};
+s.playerGameOver = function () {
+    console.log('GAMEOVER! :D')
 };
 s.keyListener = function (event) {
     "use strict";
@@ -157,7 +168,7 @@ s.keyListener = function (event) {
      * 3: down
      **/
     if (0 <= code && code < 4 && code !== turn[0]) {
-        this._io.emit('updateDirection', code);
+        this._player.setDirection(code);
     }
 };
 
