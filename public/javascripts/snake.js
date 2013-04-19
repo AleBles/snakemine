@@ -108,6 +108,7 @@ var Snake = function (webSocketUrl) {
     this._width = 0;
     this._height = 0;
     this._intervalId = null;
+    this._food = null;
 };
 var s = Snake.prototype;
 s.start = function (playerName, playerColor) {
@@ -120,6 +121,7 @@ s.start = function (playerName, playerColor) {
     this._io.on('updateCoords', $.proxy(this.updateCoords, this));
     this._io.on('map', $.proxy(this.receiveMap, this));
     this._io.on('gameOver', $.proxy(this.playerGameOver, this));
+    this._io.on('placeFood', $.proxy(this.placeFood, this));
 
     document.onkeydown = $.proxy(this.keyListener, this);
 
@@ -141,7 +143,7 @@ s.receiveMap = function (mapData) {
     console.dir(mapData);
     this.xOffset = this._width / mapData[0].length;
     this.yOffset = this._height / mapData.length;
-
+    this._food = new Food(this.xOffset, this.yOffset);
     this._board = new Board(mapData, this.xOffset, this.yOffset);
     this._board.draw(this._ctx);
 
@@ -151,21 +153,23 @@ s.receiveMap = function (mapData) {
 s.tick = function () {
     "use strict";
     this._player.update(this._io);
+    this._food.draw(this._ctx);
     this._player.draw(this._ctx);
 };
 s.playerGameOver = function () {
-    console.log('GAMEOVER! :D')
+    "use strict";
+    clearInterval(this._intervalId);
+    $('#connect-modal').modal('show');
+};
+s.placeFood = function (coords) {
+    "use strict";
+    this._food.place(coords.x, coords.y);
 };
 s.keyListener = function (event) {
     "use strict";
     var code = event.keyCode - 37;
-
-    console.log('Keydown: ' + code);
     /***
-     * 0: left
-     * 1: up
-     * 2: right
-     * 3: down
+     * 0: left, 1: up, 2: right, 3: down
      **/
     if (0 <= code && code < 4 && code !== turn[0]) {
         this._player.setDirection(code);

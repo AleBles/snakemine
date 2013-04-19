@@ -20,6 +20,7 @@
 </div>
 
 <% include modals/connect.ejs %>
+<% include modals/gameover.ejs %>
 
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script src="javascripts/bootstrap.min.js"></script>
@@ -27,6 +28,10 @@
 <script src="javascripts/snake.js"></script>
 <script src="http://localhost:8081/socket.io/socket.io.js"></script>
 <script type="text/javascript">
+    function startGame() {
+        snakeGame.start($('#playerName').val(), $('#playerColor').val())
+        $('#connect-modal').modal('hide');
+    };
     $('#color').colorpicker();
     $('#connect-modal').modal('show');
     var snakeGame = new Snake('ws://localhost:8081');
