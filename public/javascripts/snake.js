@@ -33,8 +33,10 @@ b.draw = function (ctx) {
  */
 var Food = function (xOffset, yOffset) {
     "use strict";
-    this.x = this.y = 0;
-    this.oldCoords = { x: 0, y: 0 };
+    this.x = 0;
+    this.y = 0;
+    this.oldX = 0;
+    this.oldY = 0;
     this.xOffset = xOffset;
     this.yOffset = yOffset;
     this.color = 'rgb(200,0,0)';
@@ -43,15 +45,16 @@ var Food = function (xOffset, yOffset) {
 var f = Food.prototype;
 f.place = function (x, y) {
     "use strict";
-    this.oldCoords.x = this.x;
-    this.oldCoords.y = this.y;
+    this.oldX = this.x;
+    this.oldY = this.y;
     this.x = x;
     this.y = y;
+    this.cnt = 0;
     return this;
 };
 f.draw = function (ctx) {
     "use strict";
-    if (this.oldCoords.x !== this.x && this.oldCoords.y !== this.y && this.cnt < 1) {
+    if (this.oldX !== this.x && this.oldY !== this.y && this.cnt < 1) {
         ctx.fillStyle = this.color;
         ctx.fillRect(this.x * this.xOffset + 1, this.y * this.yOffset + 1, this.xOffset - 2, this.yOffset - 2);
         this.cnt += 1;
@@ -71,6 +74,7 @@ var Player = function (name, color) {
     this.oldCoords = {x: null, y: null};
     this.velocity = {x: [-1, 0, 1, 0], y: [0, -1, 0, 1] };
     this.direction = Math.random() * 3 | 0;
+    this.length = 1;
 };
 var p = Player.prototype;
 p.init = function (xOffset, yOffset) {
@@ -129,6 +133,7 @@ s.start = function (playerName, playerColor) {
     this._io.on('map', $.proxy(this.receiveMap, this));
     this._io.on('gameOver', $.proxy(this.playerGameOver, this));
     this._io.on('placeFood', $.proxy(this.placeFood, this));
+    this._io.on('eat', $.proxy(this.eatFood, this));
 
     document.onkeydown = $.proxy(this.keyListener, this);
 
@@ -170,7 +175,13 @@ s.playerGameOver = function () {
 };
 s.placeFood = function (coords) {
     "use strict";
+    console.log('placing food!');
     this._food.place(coords.x, coords.y);
+};
+s.eatFood = function () {
+    "use strict";
+    this._player.length += 1;
+    console.log(this._player.length);
 };
 s.keyListener = function (event) {
     "use strict";
