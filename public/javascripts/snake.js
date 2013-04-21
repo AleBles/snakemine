@@ -75,6 +75,7 @@ var Player = function (name, color) {
     this.velocity = {x: [-1, 0, 1, 0], y: [0, -1, 0, 1] };
     this.direction = Math.random() * 3 | 0;
     this.length = 1;
+    this.queue = [];
 };
 var p = Player.prototype;
 p.init = function (xOffset, yOffset) {
@@ -95,6 +96,7 @@ p.update = function (socket) {
     this.y += this.velocity.y[this.direction];
 
     socket.emit('updateCoords', {x: this.x, y: this.y});
+    this.queue.unshift([this.x, this.y]);
 };
 p.setDirection = function (dir) {
     "use strict";
@@ -102,7 +104,11 @@ p.setDirection = function (dir) {
 };
 p.draw = function (ctx) {
     "use strict";
-    ctx.clearRect(this.oldCoords.x * this.xOffset, this.oldCoords.y * this.yOffset, this.xOffset, this.yOffset);
+    if (this.length < this.queue.length) {
+        var coords = this.queue.pop();
+        ctx.clearRect(coords[0] * this.xOffset, coords[1] * this.yOffset, this.xOffset, this.yOffset);
+    }
+
     ctx.fillStyle = this.color;
     ctx.fillRect(this.x * this.xOffset + 1, this.y * this.yOffset + 1, this.xOffset - 2, this.yOffset - 2);
 };
@@ -142,7 +148,7 @@ s.start = function (playerName, playerColor) {
     this._height = canvas.height = canvas.offsetWidth / 2;
     this._ctx = canvas.getContext('2d');
 
-    this._intervalId = setInterval($.proxy(this.tick, this), 33);
+    this._intervalId = setInterval($.proxy(this.tick, this), 120);
 
 };
 s.connected = function () {
@@ -193,151 +199,3 @@ s.keyListener = function (event) {
         this._player.setDirection(code);
     }
 };
-
-//function init() {
-//
-//    var ctx;
-//    var doc = document;
-//    var xV = [-1, 0, 1, 0];
-//    var yV = [0, -1, 0, 1];
-//    var queue = [];
-//
-//    var elements = 1;
-//    var map = [];
-//
-//
-//    var Z = 10;
-//    var X = 5 + (Math.random() * (45 - Z))|0;
-//    var Y = 5 + (Math.random() * (30 - Z))|0;
-//
-//    var direction = Math.random() * 3 | 0;
-//
-//    var interval = 0;
-//
-//    var score = 0;
-//    var inc_score = 50;
-//
-//    var sum = 0, easy = 0;
-//
-//    var i, dir, board, food;
-//
-//    var canvas = doc.getElementById('stage');
-//
-//    for (i = 0; i < 45; i++) {
-//        map[i] = [];
-//    }
-//
-//    canvas.setAttribute('width', 45 * Z);
-//    canvas.setAttribute('height', 30 * Z);
-//
-//    ctx = canvas.getContext('2d');
-//
-//    food = new Food(Z);
-//    food.place(map).draw(ctx);
-//
-//    board = new Board(45 * Z, 30 * Z, Z);
-//    board.draw(ctx, map);
-//
-//    function clock() {
-//
-//        if (easy) {
-//            X = (X+45)%45;
-//            Y = (Y+30)%30;
-//        }
-//
-//        --inc_score;
-//
-//        if (turn.length) {
-//            dir = turn.pop();
-//            if ((dir % 2) !== (direction % 2)) {
-//                direction = dir;
-//            }
-//        }
-//
-//        if (
-//
-//            (easy || (0 <= X && 0 <= Y && X < 45 && Y < 30))
-//
-//
-//                && 2 !== map[X][Y]) {
-//            if (1 === map[X][Y]) {
-//                score+= Math.max(5, inc_score);
-//                inc_score = 50;
-//                food.place(map).draw(ctx);
-//                elements++;
-//            }
-//            if (3 === map[X][Y]) {
-//                if (confirm("You lost! Play again? Your Score is " + score)) {
-//
-//                    ctx.clearRect(0, 0, 450, 300);
-//                    queue = [];
-//
-//                    elements = 1;
-//                    map = [];
-//
-//                    X = 5 + (MR() * (45 - Z))|0;
-//                    Y = 5 + (MR() * (30 - Z))|0;
-//
-//                    direction = MR() * 3 | 0;
-//
-//                    score = 0;
-//                    inc_score = 50;
-//
-//                    for (i = 0; i < 45; i++) {
-//                        map[i] = [];
-//                    }
-//
-//                    food.place(map).draw(ctx);
-//                } else {
-//                    clearInterval(interval);
-//                }
-//            }
-//
-//            ctx.fillRect(X * Z, Y * Z, Z - 1, Z - 1);
-//            map[X][Y] = 2;
-//            queue.unshift([X, Y]);
-//
-//            X+= xV[direction];
-//            Y+= yV[direction];
-//
-//            if (elements < queue.length) {
-//                dir = queue.pop()
-//
-//                map[dir[0]][dir[1]] = 0;
-//                ctx.clearRect(dir[0] * Z, dir[1] * Z, Z, Z);
-//            }
-//        } else if (!turn.length) {
-//            if (confirm("You lost! Play again? Your Score is " + score)) {
-//
-//                ctx.clearRect(0, 0, 450, 300);
-//                queue = [];
-//
-//                elements = 1;
-//                map = [];
-//
-//                X = 5 + (Math.random() * (45 - Z))|0;
-//                Y = 5 + (Math.random() * (30 - Z))|0;
-//
-//                direction = Math.random() * 3 | 0;
-//
-//                score = 0;
-//                inc_score = 50;
-//
-//                for (i = 0; i < 45; i++) {
-//                    map[i] = [];
-//                }
-//
-//                food.place(map).draw(ctx);
-//            } else {
-//                clearInterval(interval);
-//            }
-//        }
-//
-//    }
-//
-//    interval = setInterval(clock, 120);
-//
-//    doc.onkeydown = function(e) {
-//
-//    }
-//}
