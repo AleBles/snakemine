@@ -11,30 +11,49 @@
         <% include navbar.ejs %>
         <div class="container">
             <div class="row-fluid">
-                <div class="span8 stage-span"><canvas id="stage"></canvas></div>
-                <div class="span4 well well-small players">Players</div>
+                <div class="span8 stage-span">
+                    <canvas id="context-background"></canvas>
+                    <canvas id="context-below"></canvas>
+                    <canvas id="context-player"></canvas>
+                    <canvas id="context-above"></canvas>
+                </div>
+                <div class="span4 well well-small players">
+                    <h3>Players</h3>
+                    <table id="player-table"></table>
+                </div>
             </div>
             <div class="row-fluid">
-    <div class="span12 well well-small">Chat</div>
-</div>
-</div>
+                <div class="span12 well well-small">
+                    <div id="chat-body">
+                        <table id="chat-table"></table>
+                    </div>
+                    <div id="chat-input">
+                        <input type="text" id="chat-text"><button id="chat-submit" class="btn btn-primary">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-<% include modals/connect.ejs %>
-<% include modals/gameover.ejs %>
+        <% include modals/connect.ejs %>
+        <% include modals/gameover.ejs %>
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-<script src="javascripts/bootstrap.min.js"></script>
-<script src="javascripts/bootstrap-colorpicker.js"></script>
-<script src="javascripts/snake.js"></script>
-<script src="http://localhost:8081/socket.io/socket.io.js"></script>
-<script type="text/javascript">
-    function startGame() {
-        snakeGame.start($('#playerName').val(), $('#playerColor').val())
-        $('#connect-modal').modal('hide');
-    };
-    $('#color').colorpicker();
-    $('#connect-modal').modal('show');
-    var snakeGame = new Snake('ws://localhost:8081');
-</script>
-</body>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script src="javascripts/common.js"></script>
+        <script src="javascripts/bootstrap.min.js"></script>
+        <script src="javascripts/bootstrap-colorpicker.js"></script>
+        <script src="javascripts/snakemine/food.js"></script>
+        <script src="javascripts/snakemine/board.js"></script>
+        <script src="javascripts/snakemine/snake.js"></script>
+        <script src="javascripts/game.js"></script>
+        <script src="http://localhost:8081/socket.io/socket.io.js"></script>
+        <script type="text/javascript">
+            function startGame() {
+                snakeGame.start($('#playerName').val(), $('#playerColor').val())
+                $('#connect-modal').modal('hide');
+            };
+            $('#color').colorpicker();
+            $('#connect-modal').modal('show');
+            var snakeGame = new Game('ws://localhost:8081');
+        </script>
+    </body>
 </html>

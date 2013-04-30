@@ -12,10 +12,56 @@ a {
     height:100%;
 }
 
-#stage {
-    width:100%;
-    position:relative;
+#chat-body {
+    background-color: white;
+    border: 1px solid black;
+    width: 100%;
+    height: 150px;
+    overflow:auto;
 }
+#chat-input {
+    margin-top: 10px;
+}
+#chat-submit {
+    float: right;
+}
+
+#chat-text {
+    width: 90%;
+}
+.modal-guest, .modal-login {
+    width:49%;
+    display:inline-block;
+    vertical-align: top;
+}
+.vr {
+    width:1px;
+    background-color:darkgray;
+    height:100%;
+    display:inline-block;
+}
+
+/**
+ * This is all about the stages we have for this game
+ */
 .stage-span {
     position:relative;
+}
+#context-background {
+    z-index: 1;
+}
+#context-below {
+    z-index: 2;
+}
+#context-player {
+    z-index: 3;
+}
+#context-above {
+    z-index: 4;
+}
+#context-background, #context-below, #context-player, #context-above {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width:100%;
 }
