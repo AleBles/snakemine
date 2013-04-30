@@ -25,6 +25,7 @@ f.place = function (x, y) {
 f.draw = function (ctx) {
     "use strict";
     if (this.oldX !== this.x && this.oldY !== this.y && this.cnt < 1) {
+        ctx.clearRect(this.oldX * this.xOffset, this.oldY * this.yOffset, this.xOffset, this.yOffset);
         ctx.fillStyle = this.color;
         ctx.fillRect(this.x * this.xOffset + 1, this.y * this.yOffset + 1, this.xOffset - 2, this.yOffset - 2);
         this.cnt += 1;
