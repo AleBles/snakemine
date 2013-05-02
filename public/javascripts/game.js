@@ -49,6 +49,7 @@ g._connect = function () {
     this._io.on('eat', $.proxy(this.eatFood, this));
     this._io.on('addPlayer', $.proxy(this.addPlayer, this));
     this._io.on('message', $.proxy(this.receiveMessage, this));
+    this._io.on('updatePlayer', $.proxy(this.updatePlayer, this));
 };
 g._stageSetup = function () {
     "use strict";
